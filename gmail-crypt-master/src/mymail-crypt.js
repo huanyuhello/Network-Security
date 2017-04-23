@@ -225,31 +225,18 @@ function myFunction() {
 }
 function getuploadfile(){
   console.log('test')
-  var files = document.getElementById('filesToUpload')
+  var file = document.getElementById('filesToUpload').files[0]
 
   // Loop through the FileList and render image files as thumbnails.
 
-
   var reader = new FileReader();
 
-  // Closure to capture the file information.
-  reader.onload = (function(thephoto) {
-    // return function(e) {
-      // Render thumbnail.
-      // var span = document.createElement('span');
-      // span.innerHTML = ['<img class="thumb" src="', e.target.result,
-      //                   '" title="', escape(theFile.name), '"/>'].join('');
-      // document.getElementById('list').insertBefore(span, null);
-      console.log(thephoto.value)
-    // };
-  })
+  reader.onload = function(e) {
+    var contents = e.target.result;
+    console.log(contents)
+  }
 
-
-    // Read in the image file as a data URL.
-  // reader.readAsDataURL(f);
-
-
-    // document.getElementById('files').addEventListener('change', handleFileSelect, false);
+  reader.readAsText(file)
 }
 function FileUpload(img, file) {
   var reader = new FileReader();
