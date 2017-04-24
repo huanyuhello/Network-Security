@@ -207,6 +207,7 @@ function handleResponsePromise(promise, callback) {
 }
 
 chrome.extension.onRequest.addListener(function(request, sender, callback){
+    console.log("new test");
     var result;
     //config can change at anytime, reload on request
     config.read();
@@ -232,6 +233,11 @@ chrome.extension.onRequest.addListener(function(request, sender, callback){
     }
     else if(request.method == "getOption") {
       callback(gCryptUtil.getOption(config, request.option, request.thirdParty));
+    }
+    else if(request.method == "upload"){
+      // console.log("in listennser");
+      result = encrypt(request.recipients, request.from, request.message, callback);
+      // console.log("result:" + result);
     }
     else{
       throw new Error("Unsupported Operation");

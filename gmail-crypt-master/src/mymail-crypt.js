@@ -138,9 +138,9 @@ function sendAndHandleBackgroundCall(event){
     if(response.type && response.type == "error") {
       showAlert(response, form);
     }
-    console.log("recipients:" + recipients);
-    console.log("from:" + from);
-    console.log("form:" + form);
+    // console.log("recipients:" + recipients);
+    // console.log("from:" + from);
+    // console.log("form:" + form);
     $(event.currentTarget).parent().find('[class*=btn]').removeClass('disabled');
     pendingBackgroundCall = false;
     writeContents(contents, response);
@@ -225,34 +225,48 @@ function showModalAlert(message) {
 }
 
 function sendExtensionRequestPromise(request) {
-  console.log("first");
-  console.log("request:" + request);
+  // console.log("first");
+  // console.log("request:" + request);
   // console.log(request.bodydata)
   var deferred = $.Deferred();
   chrome.extension.sendRequest(request, function(response){
-    console.log("response:" + response);
+    // console.log("response:" + response);
     deferred.resolve(response);
   });
   return deferred.promise();
 }
 
 function uploadfile(event){
-  console.log('test')
-  var file = document.getElementById('filesToUpload').files[0]
-  var password = $(this).parent().parent().find('form[class="form-inline"] input[type="password"]').val();
-  console.log("password:"+ password);
+  console.log('test');
+  if (pendingBackgroundCall) {
+    return;
+  }
+  pendingBackgroundCall = true;
+  var file = document.getElementById('filesToUpload').files[0];
+
+  var form = $(event.currentTarget).parents('.I5').find('form');
+  form.find('.alert').hide();
+
+  var password = form.find('#gCryptPasswordEncrypt').val();
+  var recipients = getRecipients(form, event);
+  var from = findSender(form);
+  $(event.currentTarget).parent().find('[class*=btn]').addClass('disabled');
   var reader = new FileReader();
   reader.onload = function(e) {
     var msg = e.target.result;
-    var objectContext = this;
-    sendExtensionRequestPromise({method: event.data.action, message: msg, password: password})
+
+    sendExtensionRequestPromise({method: event.data.action, recipients: recipients, from: from, message: msg, password: password})
     .then(function(response) {
       if(response.type && response.type == "error") {
-        console.log("error")
         showAlert(response, form);
       }
-      console.log("response:" + response)
-
+      console.log("recipients:" + recipients);
+      console.log("from:" + from);
+      console.log("form:" + form);
+      console.log("original:"+ msg + "    response:" + response);
+      $(event.currentTarget).parent().find('[class*=btn]').removeClass('disabled');
+      pendingBackgroundCall = false;
+      // writeContents(contents, response);
     });
     console.log("msg:" + msg);
   }
