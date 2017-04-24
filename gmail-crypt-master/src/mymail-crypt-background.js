@@ -99,7 +99,6 @@ function encrypt(recipients, from, message, callback) {
   handleResponsePromise(promise, callback);
 }
 
-
 function sign(message, password, from, callback) {
   var promise;
   var privKey = prepareAndValidatePrivateKey(password, from);

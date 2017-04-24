@@ -138,6 +138,9 @@ function sendAndHandleBackgroundCall(event){
     if(response.type && response.type == "error") {
       showAlert(response, form);
     }
+    console.log("recipients:" + recipients);
+    console.log("from:" + from);
+    console.log("form:" + form);
     $(event.currentTarget).parent().find('[class*=btn]').removeClass('disabled');
     pendingBackgroundCall = false;
     writeContents(contents, response);
@@ -220,50 +223,43 @@ function showModalAlert(message) {
   $('#gCryptModalBody').html(message);
   $('#gCryptModal').modal('show');
 }
-function myFunction() {
-    document.getElementById("demo").innerHTML = "Hello World";
+
+function sendExtensionRequestPromise(request) {
+  console.log("first");
+  console.log("request:" + request);
+  // console.log(request.bodydata)
+  var deferred = $.Deferred();
+  chrome.extension.sendRequest(request, function(response){
+    console.log("response:" + response);
+    deferred.resolve(response);
+  });
+  return deferred.promise();
 }
-function getuploadfile(){
+
+function uploadfile(event){
   console.log('test')
   var file = document.getElementById('filesToUpload').files[0]
-
-  // Loop through the FileList and render image files as thumbnails.
-
+  var password = $(this).parent().parent().find('form[class="form-inline"] input[type="password"]').val();
+  console.log("password:"+ password);
   var reader = new FileReader();
-
   reader.onload = function(e) {
-    var contents = e.target.result;
-    console.log(contents)
+    var msg = e.target.result;
+    var objectContext = this;
+    sendExtensionRequestPromise({method: event.data.action, message: msg, password: password})
+    .then(function(response) {
+      if(response.type && response.type == "error") {
+        console.log("error")
+        showAlert(response, form);
+      }
+      console.log("response:" + response)
+
+    });
+    console.log("msg:" + msg);
   }
-
-  reader.readAsText(file)
-}
-function FileUpload(img, file) {
-  var reader = new FileReader();
-  this.ctrl = createThrobber(img);
-  var xhr = new XMLHttpRequest();
-  this.xhr = xhr;
-
-  var self = this;
-  this.xhr.upload.addEventListener("upload", function(e) {
-        if (e.lengthComputable) {
-          var percentage = Math.round((e.loaded * 100) / e.total);
-          self.ctrl.update(percentage);
-        }
-      }, false);
-
-  xhr.upload.addEventListener("load", function(e){
-          self.ctrl.update(100);
-          var canvas = self.ctrl.ctx.canvas;
-          canvas.parentNode.removeChild(canvas);
-      }, false);
-  xhr.open("POST", "http://demos.hacks.mozilla.org/paul/demos/resources/webservices/devnull.php");
-  xhr.overrideMimeType('text/plain; charset=x-user-defined-binary');
-  reader.onload = function(evt) {
-    xhr.send(evt.target.result);
-  };
   reader.readAsBinaryString(file);
 }
+
+
 function composeIntercept(ev) {
   var composeBoxes = $('.n1tfz');
   if (composeBoxes && composeBoxes.length > 0) {
@@ -272,9 +268,9 @@ function composeIntercept(ev) {
       if (composeMenu && composeMenu.length> 0 && composeMenu.find('#gCryptEncrypt').length === 0) {
         var maxSizeCheck = composeMenu.parent().parent().parent().parent().parent().find('[style*="max-height"]');
         //The below logic is for inserting the form into the windows, different behavior for in window compose and popout compose.
-        var encryptionFormOptions = '<span id="gCryptEncrypt" class="btn-group" style="float:right"><a class="btn" href="#" id="encryptAndSign"><img src="'+chrome.extension.getURL("images/encryptIcon.png")+'" width=13 height=13/> Encrypt and Sign</a><a class="btn" href="#" id="encrypt">Encrypt</a><a class="btn" href="#" id="sign">Sign</a><input name="filesToUpload" id="filesToUpload" type="file" multiple="" /><a class="btn" id="upload">Upload</a></span>';
-        // var uploadOptions = '<span id=>'
-        var encryptionForm = '<form class="form-inline" style="float:left"><input type="password" class="input-small" placeholder="password" id="gCryptPasswordEncrypt" style="font-size:12px;margin-top:5px;"></form>';
+        var encryptionFormOptions = '<span id="gCryptEncrypt" class="btn-group" style="float:right"><a class="btn" href="#" id="encryptAndSign"><img src="'+chrome.extension.getURL("images/encryptIcon.png")+'" width=13 height=13/> Encrypt and Sign</a><a class="btn" href="#" id="encrypt">Encrypt</a><a class="btn" href="#" id="sign">Sign</a><a class="btn" href="#" id="upload">Upload</a><input name="filesToUpload" id="filesToUpload" type="file" multiple="" /></span>';
+
+        var encryptionForm = '<form class="form-inline" style="float:right"><input type="password" class="input-small" placeholder="password" id="gCryptPasswordEncrypt" style="font-size:12px;margin-top:5px;"></form>';
 
         if (maxSizeCheck && maxSizeCheck.length > 0 && maxSizeCheck.css('max-height') === maxSizeCheck.css('height')) {
           composeMenu.find('.n1tfz :nth-child(6)').after('<td class="gU" style="min-width: 360px;">' + encryptionFormOptions + '</td><td class="gU">' + encryptionForm + '</td>');
@@ -286,8 +282,7 @@ function composeIntercept(ev) {
         composeMenu.find('#encryptAndSign').click({action: "encryptAndSign"}, sendAndHandleBackgroundCall);
         composeMenu.find('#encrypt').click({action: "encrypt"}, sendAndHandleBackgroundCall);
         composeMenu.find('#sign').click({action: "sign"}, sendAndHandleBackgroundCall);
-
-        composeMenu.find('#upload').click({action: "upload"}, getuploadfile);
+        composeMenu.find('#upload').click({action: "upload"}, uploadfile);
         composeMenu.find('form[class="form-inline"]').submit({action: "encryptAndSign"}, function(event){
           sendAndHandleBackgroundCall(event);
           return false;

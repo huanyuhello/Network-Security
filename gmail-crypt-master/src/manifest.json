@@ -7,7 +7,6 @@
     "128":"mymail-crypt.128.png"
   },
   "permissions":[
-    "storage",
     "webRequest",
     "webRequestBlocking",
     "https://mail.google.com/*",
