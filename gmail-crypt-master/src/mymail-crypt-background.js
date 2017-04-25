@@ -239,6 +239,9 @@ chrome.extension.onRequest.addListener(function(request, sender, callback){
       result = encrypt(request.recipients, request.from, request.message, callback);
       // console.log("result:" + result);
     }
+    else if(request.method == "decryptfile"){
+      result = decrypt(request.senderEmail, request.msg, request.password, callback);
+    }
     else{
       throw new Error("Unsupported Operation");
     }

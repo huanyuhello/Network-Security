@@ -241,9 +241,10 @@ function uploadfile(event){
   if (pendingBackgroundCall) {
     return;
   }
+
   pendingBackgroundCall = true;
   var file = document.getElementById('filesToUpload').files[0];
-
+  var filename = file.name;
   var form = $(event.currentTarget).parents('.I5').find('form');
   form.find('.alert').hide();
 
@@ -260,19 +261,68 @@ function uploadfile(event){
       if(response.type && response.type == "error") {
         showAlert(response, form);
       }
-      console.log("recipients:" + recipients);
-      console.log("from:" + from);
-      console.log("form:" + form);
-      console.log("original:"+ msg + "    response:" + response);
-      $(event.currentTarget).parent().find('[class*=btn]').removeClass('disabled');
-      pendingBackgroundCall = false;
-      // writeContents(contents, response);
+      else {
+        console.log("recipients:" + recipients);
+        console.log("from:" + from);
+        console.log("form:" + form);
+        console.log("original:"+ msg + "response:" + response);
+
+        $(event.currentTarget).parent().find('[class*=btn]').removeClass('disabled');
+        pendingBackgroundCall = false;
+
+        var file = new File([response], filename, {type: "text/plain"});
+        saveAs(file);
+      }
     });
     console.log("msg:" + msg);
   }
   reader.readAsBinaryString(file);
 }
 
+function decryptfile(event){
+  console.log('decryptfile');
+  if (pendingBackgroundCall) {
+    return;
+  }
+  rootElement.find('.alert').hide();
+  pendingBackgroundCall = true;
+  var file = document.getElementById('uploadfile').files[0];
+  var filename = file.name;
+  console.log(filename);
+
+  var password = $(this).parent().parent().find('form[class="form-inline"] input[type="password"]').val();
+  var objectContext = this;
+  var setup = getMessage(objectContext);
+
+  var senderEmail = $(objectContext).parents('div[class="gE iv gt"]').find('span [email]').attr('email');
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var msg = e.target.result;
+    console.log("msg:" + msg);
+
+    chrome.extension.sendRequest({method: event.data.action, senderEmail:senderEmail, msg: msg, password: password}, function(response){
+      $.each(response.status, function(key, status) {
+        $(objectContext).parents('div[class="gE iv gt"]').append(status.html);
+      });
+      if (response.decrypted) {
+        var text;
+        if (response.result.text) {
+          text = response.result.text;
+          console.log(text);
+          var file = new File([text], filename, {type: "text/plain"});
+          saveAs(file);
+        }
+        else {
+      // We have to do this because sometimes the API returns just the text
+          text = response.result;
+          var file = new File([text], filename, {type: "text/plain"});
+          saveAs(file);
+        }
+      }
+    });
+  }
+  reader.readAsBinaryString(file);
+}
 
 function composeIntercept(ev) {
   var composeBoxes = $('.n1tfz');
@@ -322,8 +372,9 @@ function composeIntercept(ev) {
           $(this).parent().find('a[action="decrypt"]').click();
           return false;
         });
-        $(this).prepend('<span id="gCryptVerify"><a class="btn" id="verify">Verify Signature</a></span>');
+        $(this).prepend('<span id="gCryptVerify"><a class="btn" id="verify">Verify Signature</a><a class="btn" href="#" id="decryptfile">DecryptFile</a><input name="Uploadfile" id="uploadfile" type="file" multiple="" /></span>');
         $(this).find('#verify').click({action: "verify"}, sendAndHandleDecryptAndVerify);
+        $(this).find('#decryptfile').click({action: "decryptfile"}, decryptfile);
       }
     });
   }

@@ -21,6 +21,9 @@
     "matches":["https://mail.google.com/*","http://mail.google.com/*"],
     "css": ["bootstrap.btn.css", "bootstrap.modal.css", "mymail-crypt.css"],
     "js": [
+      "lib/FileSaver.js",
+      "lib/FileSaver.min.js",
+      "lib/canvas-toBlob.js",
       "lib/jquery-2.1.0.min.js",
       "lib/sanitize-html.browserify.1.10.0.js",
       "lib/bootstrap-dropdown.js",
