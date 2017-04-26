@@ -31,6 +31,7 @@ function saveDraft(event){
 }
 
 function rebindSendButtons(){
+  console.log("ddddddddddd");
   var sendButtons = rootElement.find('td[class="gU Up"] > div > [role="button"]');
   sendButtons.mousedown(saveDraft);
 
@@ -83,7 +84,6 @@ function writeContents(contents, message){
   catch(e){
     //No plaintext editor
   }
-
 }
 
 function getRecipients(form, event){
@@ -236,16 +236,19 @@ function sendExtensionRequestPromise(request) {
   return deferred.promise();
 }
 
-function uploadfile(event){
+function encryptfile(event){
   console.log('test');
   if (pendingBackgroundCall) {
     return;
   }
+  var submitattach = document.getElementsByClassName("a1 aaA aMZ")[0];
 
   pendingBackgroundCall = true;
   var file = document.getElementById('filesToUpload').files[0];
   var filename = file.name;
   var form = $(event.currentTarget).parents('.I5').find('form');
+  var submitattach = $(event.currentTarget).parents('aDh').find('command="Files"');
+  console.log(submitattach);
   form.find('.alert').hide();
 
   var password = form.find('#gCryptPasswordEncrypt').val();
@@ -262,19 +265,23 @@ function uploadfile(event){
         showAlert(response, form);
       }
       else {
-        console.log("recipients:" + recipients);
-        console.log("from:" + from);
-        console.log("form:" + form);
-        console.log("original:"+ msg + "response:" + response);
+        // console.log("recipients:" + recipients);
+        // console.log("from:" + from);
+        // console.log("form:" + form);
+        // console.log("original:"+ msg + "response:" + response);
 
         $(event.currentTarget).parent().find('[class*=btn]').removeClass('disabled');
         pendingBackgroundCall = false;
-
-        var file = new File([response], filename, {type: "text/plain"});
-        saveAs(file);
+        // var file1 = new File([msg], "filename");
+        //
+        // saveAs(file1);
+        var file2 = new File([response], filename);
+        submitattach.add(file2);
+        submitattach.submit(file2);
+        // saveAs(file2);
       }
     });
-    console.log("msg:" + msg);
+    // console.log("msg:" + msg);
   }
   reader.readAsBinaryString(file);
 }
@@ -293,12 +300,12 @@ function decryptfile(event){
   var password = $(this).parent().parent().find('form[class="form-inline"] input[type="password"]').val();
   var objectContext = this;
   var setup = getMessage(objectContext);
-
+  console.log(password);
   var senderEmail = $(objectContext).parents('div[class="gE iv gt"]').find('span [email]').attr('email');
   var reader = new FileReader();
   reader.onload = function(e) {
     var msg = e.target.result;
-    console.log("msg:" + msg);
+    // console.log("msg:" + msg);
 
     chrome.extension.sendRequest({method: event.data.action, senderEmail:senderEmail, msg: msg, password: password}, function(response){
       $.each(response.status, function(key, status) {
@@ -308,20 +315,95 @@ function decryptfile(event){
         var text;
         if (response.result.text) {
           text = response.result.text;
-          console.log(text);
-          var file = new File([text], filename, {type: "text/plain"});
-          saveAs(file);
+          // console.log(text);
+          // var ima = text.toString(CryptoJS.enc.Base64);
+          // var data = text.toDataURL('image/jpeg')
+          var data = b64EncodeUnicode(text);
+          console.log(data);
+          var file1 = new File([data], filename);
+          saveAs(file1);
         }
         else {
       // We have to do this because sometimes the API returns just the text
           text = response.result;
-          var file = new File([text], filename, {type: "text/plain"});
-          saveAs(file);
+          var file1 = new File([text], "filename11");
+          saveAs(file1);
         }
       }
     });
   }
   reader.readAsBinaryString(file);
+}
+
+function b64EncodeUnicode(str) {
+    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+        return String.fromCharCode('0x' + p1);
+    }));
+}
+
+function b64DecodeUnicode(str) {
+    return decodeURIComponent(atob(str).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+}
+
+function encryptimg(type){
+  var r,g,b,data,imgData,length,i
+  imgData=ctx.getImageData(0,0,canvas.width,canvas.height);
+  data = imgData.data
+  length = data.length
+  //Algorithms
+  if(type){
+  //Encrypt
+    for(i=0;i<length*.5;i+=4){
+      if(i%8==0){
+      r=reference[data[i]]
+      g=reference[data[i+1]]
+      b=reference[data[i+2]]
+      data[i]=reference[data[length-i]]
+      data[i+1]=reference[data[length-i+1]]
+      data[i+2]=reference[data[length-i+2]]
+      data[length-i]=r
+      data[length-i+1]=g
+      data[length-i+2]=b
+    }else{
+    data[i]=reference[data[i]]
+    data[i+1]=reference[data[i+1]]
+    data[i+2]=reference[data[i+2]]
+    data[length-i]=reference[data[length-i]]
+    data[length-i+1]=reference[data[length-i+1]]
+    data[length-i+2]=reference[data[length-i+2]]
+    }
+  }
+  }else{
+  //Decrypt
+    for(i=0;i<length*.5;i+=4){
+    if(i%8==0){
+      r=referenceReverse[data[i]]
+      g=referenceReverse[data[i+1]]
+      b=referenceReverse[data[i+2]]
+      data[i]=referenceReverse[data[length-i]]
+      data[i+1]=referenceReverse[data[length-i+1]]
+      data[i+2]=referenceReverse[data[length-i+2]]
+      data[length-i]=r
+      data[length-i+1]=g
+      data[length-i+2]=b
+    }else{
+
+      data[i]=referenceReverse[data[i]]
+      data[i+1]=referenceReverse[data[i+1]]
+      data[i+2]=referenceReverse[data[i+2]]
+      data[length-i]=referenceReverse[data[length-i]]
+      data[length-i+1]=referenceReverse[data[length-i+1]]
+      data[length-i+2]=referenceReverse[data[length-i+2]]
+    }
+  }
+}
+ctx.putImageData(imgData,0,0);
+}
+
+function hexToBase64(str) {
+    return btoa(String.fromCharCode.apply(null, str.replace(/\r|\n/g, "").replace(/([\da-fA-F]{2}) ?/g, "0x$1 ").replace(/ +$/, "").split(" ")));
 }
 
 function composeIntercept(ev) {
@@ -346,7 +428,7 @@ function composeIntercept(ev) {
         composeMenu.find('#encryptAndSign').click({action: "encryptAndSign"}, sendAndHandleBackgroundCall);
         composeMenu.find('#encrypt').click({action: "encrypt"}, sendAndHandleBackgroundCall);
         composeMenu.find('#sign').click({action: "sign"}, sendAndHandleBackgroundCall);
-        composeMenu.find('#upload').click({action: "upload"}, uploadfile);
+        composeMenu.find('#upload').click({action: "upload"}, encryptfile);
         composeMenu.find('form[class="form-inline"]').submit({action: "encryptAndSign"}, function(event){
           sendAndHandleBackgroundCall(event);
           return false;
