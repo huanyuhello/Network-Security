@@ -217,7 +217,8 @@ chrome.extension.onRequest.addListener(function(request, sender, callback){
     keyring.privateKeys.keys = keyring.storeHandler.loadPrivate();
 
     if (request.method == "encryptAndSign") {
-      result = encryptAndSign(request.recipients, request.from, request.message, request.password, callback);
+      // result = encryptAndSign(request.recipients, request.from, request.message, request.password, callback);
+      result = encrypt(request.recipients, request.from, request.message, callback);
     }
     else if (request.method == "encrypt") {
       result = encrypt(request.recipients, request.from, request.message, callback);

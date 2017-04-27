@@ -133,19 +133,22 @@ function sendAndHandleBackgroundCall(event){
   var password = form.find('#gCryptPasswordEncrypt').val();
   var recipients = getRecipients(form, event);
   var from = findSender(form);
-
+  console.log(password)
   $(event.currentTarget).parent().find('[class*=btn]').addClass('disabled');
 
   sendExtensionRequestPromise({method: event.data.action, recipients: recipients, from: from, message: contents.msg, password: password})
   .then(function(response) {
     if(response.type && response.type == "error") {
+      console.log(response)
       showAlert(response, form);
     }
+    console.log(password)
     // console.log("recipients:" + recipients);
     // console.log("from:" + from);
     // console.log("form:" + form);
     $(event.currentTarget).parent().find('[class*=btn]').removeClass('disabled');
     pendingBackgroundCall = false;
+    console.log(response);
     writeContents(contents, response);
   });
 }
@@ -173,6 +176,7 @@ function sendAndHandleDecryptAndVerify(event){
   var element = setup[0];
   var msg = setup[1];
   var senderEmail = $(objectContext).parents('div[class="gE iv gt"]').find('span [email]').attr('email');
+  console.log(password);
   chrome.extension.sendRequest({method: event.data.action, senderEmail:senderEmail, msg: msg, password: password}, function(response){
     $.each(response.status, function(key, status) {
       $(objectContext).parents('div[class="gE iv gt"]').append(status.html);
@@ -482,9 +486,9 @@ function composeIntercept(ev) {
       if (composeMenu && composeMenu.length> 0 && composeMenu.find('#gCryptEncrypt').length === 0) {
         var maxSizeCheck = composeMenu.parent().parent().parent().parent().parent().find('[style*="max-height"]');
         //The below logic is for inserting the form into the windows, different behavior for in window compose and popout compose.
-        var encryptionFormOptions = '<span id="gCryptEncrypt" class="btn-group" style="float:right"><a class="btn" href="#" id="encryptAndSign"><img src="'+chrome.extension.getURL("images/encryptIcon.png")+'" width=13 height=13/> Encrypt and Sign</a><a class="btn" href="#" id="encrypt">Encrypt</a><a class="btn" href="#" id="sign">Sign</a><a class="btn" href="#" id="upload">File</a><a class="btn" href="#" id="images">Image</a><input name="filesToUpload" id="filesToUpload" type="file" multiple="" /><input name="imgToUpload" id="imgToUpload" type="file" multiple="" /><canvas id="canvas"></canvas></span>';
+        var encryptionFormOptions = '<span id="gCryptEncrypt" class="btn-group" style="float:right"><a class="btn btn-primary button-container" href="#" id="encryptAndSign">Encrypt and Sign</a><a class="btn btn-primary button-container" href="#" id="encrypt">Encrypt</a><a class="btn btn-primary button-container" href="#" id="upload">File</a><a class="btn btn-primary button-container" href="#" id="images">Image</a><input class="input-container" name="filesToUpload" id="filesToUpload" type="file" multiple="" /><label for="filesToUpload" class="btn btn-primary button-container">Choose File</label><input class="input-container" name="imgToUpload" id="imgToUpload" type="file" multiple="" /><label for="imgToUpload" class="btn btn-primary button-container">Choose Image</label><canvas id="canvas"></canvas></span>';
 
-        var encryptionForm = '<form class="form-inline" style="float:right"><input type="password" class="input-small" placeholder="password" id="gCryptPasswordEncrypt" style="font-size:12px;margin-top:5px;"></form>';
+        var encryptionForm = '<form class="form-inline form-container-2" style="float:right"><input type="password" class="input-small password-container-2" placeholder="" id="gCryptPasswordEncrypt" style="font-size:12px;margin-top:5px;"></form>';
 
         if (maxSizeCheck && maxSizeCheck.length > 0 && maxSizeCheck.css('max-height') === maxSizeCheck.css('height')) {
           composeMenu.find('.n1tfz :nth-child(6)').after('<td class="gU" style="min-width: 360px;">' + encryptionFormOptions + '</td><td class="gU">' + encryptionForm + '</td>');
@@ -516,14 +520,14 @@ function composeIntercept(ev) {
   if (viewTitleBar && viewTitleBar.length > 0) {
     viewTitleBar.each(function(v) {
       if ($(this).find('#gCryptDecrypt').length === 0) {
-        $(this).prepend('<span id="gCryptDecrypt"><a class="btn" action="decrypt" id="decrypt"><img src="'+chrome.extension.getURL("images/decryptIcon.png")+'" width=13 height=13 />Decrypt</a></span>');
+        $(this).prepend('<span id="gCryptDecrypt"><a class="btn btn-primary button-container" action="decrypt" id="decrypt">Decrypt</a></span>');
         $(this).find('#decrypt').click({action: "decrypt"}, sendAndHandleDecryptAndVerify);
-        $(this).append('<form class="form-inline"><input type="password" class="input-small" placeholder="password" id="gCryptPasswordDecrypt"></form>');
+        $(this).append('<form class="form-inline"><input type="password" class="input-small password-container" placeholder="password" id="gCryptPasswordDecrypt"></form>');
         $(this).find('form[class="form-inline"]').submit(function(event){
           $(this).parent().find('a[action="decrypt"]').click();
           return false;
         });
-        $(this).prepend('<span id="gCryptVerify"><a class="btn" id="verify">Verify Signature</a><a class="btn" href="#" id="decryptfile">DecryptFile</a><a class="btn" href="#" id="image">DecryptImg</a><input name="Uploadfile" id="uploadfile" type="file" multiple="" /><input name="Imgtodecrypt" id="Imgtodecrypt" type="file" multiple="" /></span>');
+        $(this).prepend('<span id="gCryptVerify"><a class="btn btn-primary button-container" id="verify">Verify Signature</a><a class="btn btn-primary button-container" href="#" id="decryptfile">DecryptFile</a><a class="btn btn-primary button-container" href="#" id="image">DecryptImg</a><input class="input-container" name="Uploadfile" id="uploadfile" type="file" multiple="" /><label for="uploadfile" class="btn btn-primary button-container">Choose File</label><input class="input-container" name="Imgtodecrypt" id="Imgtodecrypt" type="file" multiple="" /><label for="Imgtodecrypt" class="btn btn-primary button-container">Choose Image</label></span>');
         $(this).find('#verify').click({action: "verify"}, sendAndHandleDecryptAndVerify);
         $(this).find('#decryptfile').click({action: "decryptfile"}, decryptfile);
         $(this).find('#image').click({action: "decryptimg"}, decryptimg);

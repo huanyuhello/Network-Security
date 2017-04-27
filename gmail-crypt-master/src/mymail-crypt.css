@@ -1,4 +1,4 @@
-@-webkit-keyframes composeInserted {  
+@-webkit-keyframes composeInserted {
     from { clip: rect(1px, auto, auto, auto); }
       to { clip: rect(0px, auto, auto, auto); }
     }
@@ -7,3 +7,47 @@
       -webkit-animation-duration: 0.001s;
       -webkit-animation-name: composeInserted;
     }
+
+.button-container {
+  color: white!important;
+  padding: 5px;
+  margin: 5px;
+  border-radius: 4px!important;
+}
+
+/*.label-file-img {
+  padding: 5px;
+  margin: 5px;
+  border-radius: 4px!important;
+}*/
+
+.input-container {
+  display: none;
+}
+
+.form-container {
+  display: flex;
+  /*justify-content: center;*/
+  flex-direction: row;
+}
+.password-container {
+  border-radius: 4px;
+  width: 30%!important;
+  margin-top: 10px;
+  margin-left: 5px;
+}
+
+.form-container-2 {
+  display: flex;
+  /*justify-content: center;*/
+  flex-direction: row-reverse;
+  margin-top: 5px;
+  margin-right: 10px;
+}
+
+.password-container-2 {
+  border-radius: 4px!important;
+  width: 100%!important;
+  margin-top: 10px;
+  margin-left: 5px;
+}

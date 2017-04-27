@@ -1,10 +1,10 @@
 {
-  "name":"Mymail-Crypt for Gmail™",
-  "version":"38",
+  "name":"Email encryption and authentication",
+  "version":"1.0",
   "manifest_version":2,
-  "description":"Extension implementing GPG into Webmail (Gmail™) using the OpenPGP.js library. This project is no way affiliated with Google™.",
+  "description":"CS5321 Project",
   "icons": {
-    "128":"mymail-crypt.128.png"
+    "128":"CS5321.png"
   },
   "permissions":[
     "webRequest",
@@ -34,7 +34,6 @@
     "run_at":"document_idle",
     "all_frames":true
   }],
-  "homepage_url":"http://prometheusx.net",
   "options_page":"mymail-crypt-options.html",
   "web_accessible_resources": [
     "images/decryptIcon.png",
