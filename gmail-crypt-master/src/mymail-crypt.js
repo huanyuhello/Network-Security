@@ -4,9 +4,12 @@
  * This program is licensed under the GNU General Public License Version 2.
  * See included "LICENSE" file for details.
  */
-
 var sanitizeHtml = require('sanitizeHtml');
+// var mvelo = require('mvelo');
+// import './mvelo'
 var rootElement = $(document);
+
+
 
 //This clear and save is specific to the embedded reply composes
 function clearAndSaveReply(event){
@@ -236,19 +239,25 @@ function sendExtensionRequestPromise(request) {
   return deferred.promise();
 }
 
+
+// function dataURL2str(dataURL) {
+//   var base64 = dataURL.split(';base64,')[1];
+//   return mvelo.util.getDOMWindow().atob(base64);
+// }
+
 function encryptfile(event){
   console.log('test');
   if (pendingBackgroundCall) {
     return;
   }
-  var submitattach = document.getElementsByClassName("a1 aaA aMZ")[0];
+  // var submitattach = document.getElementsByClassName("a1 aaA aMZ")[0];
 
   pendingBackgroundCall = true;
   var file = document.getElementById('filesToUpload').files[0];
   var filename = file.name;
   var form = $(event.currentTarget).parents('.I5').find('form');
-  var submitattach = $(event.currentTarget).parents('aDh').find('command="Files"');
-  console.log(submitattach);
+  // var submitattach = $(event.currentTarget).parents('aDh').find('command="Files"');
+  // console.log(submitattach);
   form.find('.alert').hide();
 
   var password = form.find('#gCryptPasswordEncrypt').val();
@@ -258,17 +267,14 @@ function encryptfile(event){
   var reader = new FileReader();
   reader.onload = function(e) {
     var msg = e.target.result;
-
+    // var content = dataURL2str(msg);
+    // console.log("content:" + content);
     sendExtensionRequestPromise({method: event.data.action, recipients: recipients, from: from, message: msg, password: password})
     .then(function(response) {
       if(response.type && response.type == "error") {
         showAlert(response, form);
       }
       else {
-        // console.log("recipients:" + recipients);
-        // console.log("from:" + from);
-        // console.log("form:" + form);
-        // console.log("original:"+ msg + "response:" + response);
 
         $(event.currentTarget).parent().find('[class*=btn]').removeClass('disabled');
         pendingBackgroundCall = false;
@@ -276,14 +282,15 @@ function encryptfile(event){
         //
         // saveAs(file1);
         var file2 = new File([response], filename);
-        submitattach.add(file2);
-        submitattach.submit(file2);
-        // saveAs(file2);
+        // submitattach.add(file2);
+        // submitattach.submit(file2);
+        saveAs(file2);
       }
     });
     // console.log("msg:" + msg);
   }
   reader.readAsBinaryString(file);
+  // reader.readAsDataURL(file);
 }
 
 function decryptfile(event){
@@ -315,12 +322,8 @@ function decryptfile(event){
         var text;
         if (response.result.text) {
           text = response.result.text;
-          // console.log(text);
-          // var ima = text.toString(CryptoJS.enc.Base64);
-          // var data = text.toDataURL('image/jpeg')
-          var data = b64EncodeUnicode(text);
-          console.log(data);
-          var file1 = new File([data], filename);
+
+          var file1 = new File([text], filename);
           saveAs(file1);
         }
         else {
@@ -333,77 +336,148 @@ function decryptfile(event){
     });
   }
   reader.readAsBinaryString(file);
+  // reader.readAsDataURL(file);
 }
 
-function b64EncodeUnicode(str) {
-    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function(match, p1) {
-        return String.fromCharCode('0x' + p1);
-    }));
+
+//Equivalences (255 random values you can use a personalized version)
+
+function encryptimg(){
+
+    var r,g,b,data,imgData,length,i
+    var image = document.getElementById('imgToUpload').files[0];
+    if (!image.type.match('image.*')) {
+      console.log("not match");
+      return;
+    }
+    var reader = new FileReader();
+
+    reader.onload = (function(image) {
+       // Render thumbnail.
+        console.log("11111");
+        console.log(image)
+        // downloadCanvas(this, image, "file.jpg");
+        exampleImage(image.target.result);
+
+    });
+    reader.readAsDataURL(image);
 }
 
-function b64DecodeUnicode(str) {
-    return decodeURIComponent(atob(str).split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
-}
+reference = [86,112,145,159,208,239,140,217,44,15,203,229,40,213,6,154,103,16,37,53,198,243,43,33,171,235,233,24,148,23,70,179,35,193,75,207,162,65,150,137,45,5,32,216,108,224,250,219,170,62,9,163,220,117,228,132,161,241,202,157,169,189,115,114,27,109,99,106,71,85,47,143,83,215,133,104,255,197,89,60,17,87,69,84,254,52,244,11,158,141,166,30,125,21,126,172,247,191,102,181,67,165,46,246,8,66,113,205,200,29,48,39,186,231,230,242,111,129,105,249,192,94,134,120,160,90,199,34,110,187,142,0,237,218,174,178,195,97,3,180,190,119,91,96,245,175,167,135,14,253,72,155,116,55,10,13,222,63,68,121,182,127,183,88,214,2,50,168,36,64,177,201,151,107,152,206,240,78,59,149,18,92,138,28,76,51,146,77,188,12,124,210,31,128,211,209,225,212,164,58,82,223,93,131,144,79,38,80,7,25,173,101,234,122,19,226,118,194,42,156,176,252,22,73,184,49,204,4,251,185,232,248,1,196,221,227,20,98,61,153,130,26,57,41,147,238,95,139,74,123,236,56,136,54,81,100];
 
-function encryptimg(type){
-  var r,g,b,data,imgData,length,i
-  imgData=ctx.getImageData(0,0,canvas.width,canvas.height);
-  data = imgData.data
-  length = data.length
-  //Algorithms
-  if(type){
-  //Encrypt
-    for(i=0;i<length*.5;i+=4){
+
+function exampleImage(src){
+  // console.log("src:" + src);
+  var myImg = new Image();
+
+  myImg.onload = function(){
+    var canvas = document.createElement('canvas');
+    var context = canvas.getContext('2d');
+    canvas.width = myImg.width;
+    canvas.height = myImg.height;
+
+    var ImageData = context.getImageData(0,0,myImg.width,myImg.height);
+
+    var data = ImageData.data;
+    // console.log(ImageData.data);
+    // console.log("old:");
+    // console.log(data);
+    var length = data.length;
+    // setup();
+
+    // console.log("length:" + length);
+    var i;
+    // console.log(reference);
+    data = 0;
+    for (i =0; i <length*.5; i+=4)
+    {
       if(i%8==0){
-      r=reference[data[i]]
-      g=reference[data[i+1]]
-      b=reference[data[i+2]]
-      data[i]=reference[data[length-i]]
-      data[i+1]=reference[data[length-i+1]]
-      data[i+2]=reference[data[length-i+2]]
-      data[length-i]=r
-      data[length-i+1]=g
-      data[length-i+2]=b
-    }else{
-    data[i]=reference[data[i]]
-    data[i+1]=reference[data[i+1]]
-    data[i+2]=reference[data[i+2]]
-    data[length-i]=reference[data[length-i]]
-    data[length-i+1]=reference[data[length-i+1]]
-    data[length-i+2]=reference[data[length-i+2]]
+        r=reference[data[i]]
+        g=reference[data[i+1]]
+        b=reference[data[i+2]]
+        data[i]=reference[data[length-i]]
+        data[i+1]=reference[data[length-i+1]]
+        data[i+2]=reference[data[length-i+2]]
+        data[length-i]=r
+        data[length-i+1]=g
+        data[length-i+2]=b
+      }else{
+        data[i]=reference[data[i]]
+        data[i+1]=reference[data[i+1]]
+        data[i+2]=reference[data[i+2]]
+        data[length-i]=reference[data[length-i]]
+        data[length-i+1]=reference[data[length-i+1]]
+        data[length-i+2]=reference[data[length-i+2]]
+      }
     }
-  }
-  }else{
-  //Decrypt
-    for(i=0;i<length*.5;i+=4){
-    if(i%8==0){
-      r=referenceReverse[data[i]]
-      g=referenceReverse[data[i+1]]
-      b=referenceReverse[data[i+2]]
-      data[i]=referenceReverse[data[length-i]]
-      data[i+1]=referenceReverse[data[length-i+1]]
-      data[i+2]=referenceReverse[data[length-i+2]]
-      data[length-i]=r
-      data[length-i+1]=g
-      data[length-i+2]=b
-    }else{
+    // setup();
+    // console.log(referenceReverse)
+    // for(i=0;i<length*.5;i+=4){
+    //   if(i%8==0){
+    //     r=referenceReverse[data[i]]
+    //     g=referenceReverse[data[i+1]]
+    //     b=referenceReverse[data[i+2]]
+    //     data[i]=referenceReverse[data[length-i]]
+    //     data[i+1]=referenceReverse[data[length-i+1]]
+    //     data[i+2]=referenceReverse[data[length-i+2]]
+    //     data[length-i]=r
+    //     data[length-i+1]=g
+    //     data[length-i+2]=b
+    //   }else{
+    //
+    //     data[i]=referenceReverse[data[i]]
+    //     data[i+1]=referenceReverse[data[i+1]]
+    //     data[i+2]=referenceReverse[data[i+2]]
+    //     data[length-i]=referenceReverse[data[length-i]]
+    //     data[length-i+1]=referenceReverse[data[length-i+1]]
+    //     data[length-i+2]=referenceReverse[data[length-i+2]]
+    //
+    //   }
+    //
+    // }
 
-      data[i]=referenceReverse[data[i]]
-      data[i+1]=referenceReverse[data[i+1]]
-      data[i+2]=referenceReverse[data[i+2]]
-      data[length-i]=referenceReverse[data[length-i]]
-      data[length-i+1]=referenceReverse[data[length-i+1]]
-      data[length-i+2]=referenceReverse[data[length-i+2]]
+    context.putImageData(ImageData,0,0);
+    // downloadCanvas(myImg,"test.jpg");
+    var dataimage = canvas.toDataURL("image/jpg").replace("image/jpg", "image/octet-stream");
+    console.log("test");
+    window.location.href = dataimage;
+  }
+  myImg.src = src;
+}
+
+function decryptimg(){
+
+    var r,g,b,data,imgData,length,i
+    var image = document.getElementById('imgToUpload').files[0];
+    if (!image.type.match('image.*')) {
+      console.log("not match");
+      return;
     }
-  }
-}
-ctx.putImageData(imgData,0,0);
+    var reader = new FileReader();
+
+    reader.onload = (function(image) {
+       // Render thumbnail.
+        console.log("11111");
+        console.log(image)
+        // downloadCanvas(this, image, "file.jpg");
+        exampleImage(image.target.result);
+
+    });
+    reader.readAsDataURL(image);
 }
 
-function hexToBase64(str) {
-    return btoa(String.fromCharCode.apply(null, str.replace(/\r|\n/g, "").replace(/([\da-fA-F]{2}) ?/g, "0x$1 ").replace(/ +$/, "").split(" ")));
+function downloadCanvas(image,filename) {
+
+}
+//This function is for configure the decryption
+function setup(){
+  console.log("setup")
+  referenceReverse = []
+  for(var i=0;i<reference.length;i++){
+    referenceReverse[reference[i]]=i
+  }
+  reference = new Uint8Array(reference)
+  referenceReverse = new Uint8Array(referenceReverse)
 }
 
 function composeIntercept(ev) {
@@ -414,7 +488,7 @@ function composeIntercept(ev) {
       if (composeMenu && composeMenu.length> 0 && composeMenu.find('#gCryptEncrypt').length === 0) {
         var maxSizeCheck = composeMenu.parent().parent().parent().parent().parent().find('[style*="max-height"]');
         //The below logic is for inserting the form into the windows, different behavior for in window compose and popout compose.
-        var encryptionFormOptions = '<span id="gCryptEncrypt" class="btn-group" style="float:right"><a class="btn" href="#" id="encryptAndSign"><img src="'+chrome.extension.getURL("images/encryptIcon.png")+'" width=13 height=13/> Encrypt and Sign</a><a class="btn" href="#" id="encrypt">Encrypt</a><a class="btn" href="#" id="sign">Sign</a><a class="btn" href="#" id="upload">Upload</a><input name="filesToUpload" id="filesToUpload" type="file" multiple="" /></span>';
+        var encryptionFormOptions = '<span id="gCryptEncrypt" class="btn-group" style="float:right"><a class="btn" href="#" id="encryptAndSign"><img src="'+chrome.extension.getURL("images/encryptIcon.png")+'" width=13 height=13/> Encrypt and Sign</a><a class="btn" href="#" id="encrypt">Encrypt</a><a class="btn" href="#" id="sign">Sign</a><a class="btn" href="#" id="upload">File</a><a class="btn" href="#" id="images">Image</a><input name="filesToUpload" id="filesToUpload" type="file" multiple="" /><input name="imgToUpload" id="imgToUpload" type="file" multiple="" /><canvas id="canvas"></canvas></span>';
 
         var encryptionForm = '<form class="form-inline" style="float:right"><input type="password" class="input-small" placeholder="password" id="gCryptPasswordEncrypt" style="font-size:12px;margin-top:5px;"></form>';
 
@@ -429,6 +503,7 @@ function composeIntercept(ev) {
         composeMenu.find('#encrypt').click({action: "encrypt"}, sendAndHandleBackgroundCall);
         composeMenu.find('#sign').click({action: "sign"}, sendAndHandleBackgroundCall);
         composeMenu.find('#upload').click({action: "upload"}, encryptfile);
+        composeMenu.find('#images').click({action: "image"}, encryptimg);
         composeMenu.find('form[class="form-inline"]').submit({action: "encryptAndSign"}, function(event){
           sendAndHandleBackgroundCall(event);
           return false;
