@@ -357,7 +357,7 @@ function encryptimg(){
         console.log("11111");
         console.log(image)
         // downloadCanvas(this, image, "file.jpg");
-        exampleImage(image.target.result);
+        exampleImage(image.target.result,true);
 
     });
     reader.readAsDataURL(image);
@@ -366,80 +366,74 @@ function encryptimg(){
 reference = [86,112,145,159,208,239,140,217,44,15,203,229,40,213,6,154,103,16,37,53,198,243,43,33,171,235,233,24,148,23,70,179,35,193,75,207,162,65,150,137,45,5,32,216,108,224,250,219,170,62,9,163,220,117,228,132,161,241,202,157,169,189,115,114,27,109,99,106,71,85,47,143,83,215,133,104,255,197,89,60,17,87,69,84,254,52,244,11,158,141,166,30,125,21,126,172,247,191,102,181,67,165,46,246,8,66,113,205,200,29,48,39,186,231,230,242,111,129,105,249,192,94,134,120,160,90,199,34,110,187,142,0,237,218,174,178,195,97,3,180,190,119,91,96,245,175,167,135,14,253,72,155,116,55,10,13,222,63,68,121,182,127,183,88,214,2,50,168,36,64,177,201,151,107,152,206,240,78,59,149,18,92,138,28,76,51,146,77,188,12,124,210,31,128,211,209,225,212,164,58,82,223,93,131,144,79,38,80,7,25,173,101,234,122,19,226,118,194,42,156,176,252,22,73,184,49,204,4,251,185,232,248,1,196,221,227,20,98,61,153,130,26,57,41,147,238,95,139,74,123,236,56,136,54,81,100];
 
 
-function exampleImage(src){
+function exampleImage(src,type){
   // console.log("src:" + src);
   var myImg = new Image();
 
   myImg.onload = function(){
     var canvas = document.createElement('canvas');
     var context = canvas.getContext('2d');
+    context.clearRect(0,0,canvas.width,canvas.height)
     canvas.width = myImg.width;
     canvas.height = myImg.height;
-
-    var ImageData = context.getImageData(0,0,myImg.width,myImg.height);
-
+    context.drawImage(myImg,0,0)
+    setup();
+    var ImageData = context.getImageData(0,0,canvas.width,canvas.height);
     var data = ImageData.data;
-    // console.log(ImageData.data);
-    // console.log("old:");
-    // console.log(data);
     var length = data.length;
-    // setup();
-
-    // console.log("length:" + length);
     var i;
-    // console.log(reference);
-    data = 0;
-    for (i =0; i <length*.5; i+=4)
-    {
-      if(i%8==0){
-        r=reference[data[i]]
-        g=reference[data[i+1]]
-        b=reference[data[i+2]]
-        data[i]=reference[data[length-i]]
-        data[i+1]=reference[data[length-i+1]]
-        data[i+2]=reference[data[length-i+2]]
-        data[length-i]=r
-        data[length-i+1]=g
-        data[length-i+2]=b
-      }else{
-        data[i]=reference[data[i]]
-        data[i+1]=reference[data[i+1]]
-        data[i+2]=reference[data[i+2]]
-        data[length-i]=reference[data[length-i]]
-        data[length-i+1]=reference[data[length-i+1]]
-        data[length-i+2]=reference[data[length-i+2]]
+    // data = 0;
+    if(type){
+      for (i =0; i <length*.5; i+=4)
+      {
+        if(i%8==0){
+          r=reference[data[i]]
+          g=reference[data[i+1]]
+          b=reference[data[i+2]]
+          data[i]=reference[data[length-i]]
+          data[i+1]=reference[data[length-i+1]]
+          data[i+2]=reference[data[length-i+2]]
+          data[length-i]=r
+          data[length-i+1]=g
+          data[length-i+2]=b
+        }else{
+          data[i]=reference[data[i]]
+          data[i+1]=reference[data[i+1]]
+          data[i+2]=reference[data[i+2]]
+          data[length-i]=reference[data[length-i]]
+          data[length-i+1]=reference[data[length-i+1]]
+          data[length-i+2]=reference[data[length-i+2]]
+        }
       }
     }
-    // setup();
-    // console.log(referenceReverse)
-    // for(i=0;i<length*.5;i+=4){
-    //   if(i%8==0){
-    //     r=referenceReverse[data[i]]
-    //     g=referenceReverse[data[i+1]]
-    //     b=referenceReverse[data[i+2]]
-    //     data[i]=referenceReverse[data[length-i]]
-    //     data[i+1]=referenceReverse[data[length-i+1]]
-    //     data[i+2]=referenceReverse[data[length-i+2]]
-    //     data[length-i]=r
-    //     data[length-i+1]=g
-    //     data[length-i+2]=b
-    //   }else{
-    //
-    //     data[i]=referenceReverse[data[i]]
-    //     data[i+1]=referenceReverse[data[i+1]]
-    //     data[i+2]=referenceReverse[data[i+2]]
-    //     data[length-i]=referenceReverse[data[length-i]]
-    //     data[length-i+1]=referenceReverse[data[length-i+1]]
-    //     data[length-i+2]=referenceReverse[data[length-i+2]]
-    //
-    //   }
-    //
-    // }
+    else {
+      for(i=0;i<length*.5;i+=4){
+        if(i%8==0){
+          r=referenceReverse[data[i]]
+          g=referenceReverse[data[i+1]]
+          b=referenceReverse[data[i+2]]
+          data[i]=referenceReverse[data[length-i]]
+          data[i+1]=referenceReverse[data[length-i+1]]
+          data[i+2]=referenceReverse[data[length-i+2]]
+          data[length-i]=r
+          data[length-i+1]=g
+          data[length-i+2]=b
+        }else{
+          data[i]=referenceReverse[data[i]]
+          data[i+1]=referenceReverse[data[i+1]]
+          data[i+2]=referenceReverse[data[i+2]]
+          data[length-i]=referenceReverse[data[length-i]]
+          data[length-i+1]=referenceReverse[data[length-i+1]]
+          data[length-i+2]=referenceReverse[data[length-i+2]]
+        }
+      }
+    }
 
     context.putImageData(ImageData,0,0);
-    // downloadCanvas(myImg,"test.jpg");
-    var dataimage = canvas.toDataURL("image/jpg").replace("image/jpg", "image/octet-stream");
-    console.log("test");
+
+    var dataimage = canvas.toDataURL("image/png");//.replace("image/jpg", "image/octet-stream");
+    // document.write('<img src="'+dataimage+'"/>');
+    // console.log("test");
     window.location.href = dataimage;
   }
   myImg.src = src;
@@ -447,23 +441,23 @@ function exampleImage(src){
 
 function decryptimg(){
 
-    var r,g,b,data,imgData,length,i
-    var image = document.getElementById('imgToUpload').files[0];
-    if (!image.type.match('image.*')) {
-      console.log("not match");
-      return;
-    }
-    var reader = new FileReader();
+  var r,g,b,data,imgData,length,i
+  var image = document.getElementById('Imgtodecrypt').files[0];
+  if (!image.type.match('image.*')) {
+    console.log("not match");
+    return;
+  }
+  var reader = new FileReader();
 
-    reader.onload = (function(image) {
-       // Render thumbnail.
-        console.log("11111");
-        console.log(image)
-        // downloadCanvas(this, image, "file.jpg");
-        exampleImage(image.target.result);
+  reader.onload = (function(image) {
+     // Render thumbnail.
+      console.log("11111");
+      console.log(image)
+      // downloadCanvas(this, image, "file.jpg");
+      exampleImage(image.target.result,false);
 
-    });
-    reader.readAsDataURL(image);
+  });
+  reader.readAsDataURL(image);
 }
 
 function downloadCanvas(image,filename) {
@@ -529,9 +523,10 @@ function composeIntercept(ev) {
           $(this).parent().find('a[action="decrypt"]').click();
           return false;
         });
-        $(this).prepend('<span id="gCryptVerify"><a class="btn" id="verify">Verify Signature</a><a class="btn" href="#" id="decryptfile">DecryptFile</a><input name="Uploadfile" id="uploadfile" type="file" multiple="" /></span>');
+        $(this).prepend('<span id="gCryptVerify"><a class="btn" id="verify">Verify Signature</a><a class="btn" href="#" id="decryptfile">DecryptFile</a><a class="btn" href="#" id="image">DecryptImg</a><input name="Uploadfile" id="uploadfile" type="file" multiple="" /><input name="Imgtodecrypt" id="Imgtodecrypt" type="file" multiple="" /></span>');
         $(this).find('#verify').click({action: "verify"}, sendAndHandleDecryptAndVerify);
         $(this).find('#decryptfile').click({action: "decryptfile"}, decryptfile);
+        $(this).find('#image').click({action: "decryptimg"}, decryptimg);
       }
     });
   }
